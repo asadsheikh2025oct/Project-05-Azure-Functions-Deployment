@@ -44,4 +44,13 @@ stages:
               archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
               replaceExistingArchive: true
           
-  
+      - job: publishArtifact
+        displayName: 'publish zipped files to download later'
+        dependsOn: archiveFiles
+        condition: succeeded()
+        steps:
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
