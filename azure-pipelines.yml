@@ -8,48 +8,36 @@ pool:
 
 stages:
   - stage: build
-    displayName: 'build azure function app'
-    jobs: 
-      - job: environmentSetup
-        displayName: 'environment setup'
+    displayName: 'Build Stage'
+    jobs:
+      - job: BuildJob
+        displayName: 'Build and Package'
         steps:
+          # 1. Setup the Python version on this agent
           - task: UsePythonVersion@0
-            displayName: 'environment setup'
+            displayName: 'Set Python Version 3.11'
             inputs:
               versionSpec: '3.11'
-              addToPath: true
-      - job: pythonScriptRun
-        displayName: 'run script to install dependencies'
-        dependsOn: environmentSetup
-        condition: succeeded()
-        steps:
-          - task: PythonScript@0
-            inputs:
-              scriptSource: 'inline'
-              script: |
-                python -m venv worker_venv
-                source worker_venv/bin/activate
-                pip install -r requirements.txt
 
-      - job: archiveFiles
-        displayName: 'zip files'
-        dependsOn: pythonScriptRun
-        condition: succeeded()
-        steps:
+          # 2. Install dependencies (standard script is fine for this)
+          - script: |
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: 'Install dependencies'
+
+          # 3. Zip the code (on the same machine)
           - task: ArchiveFiles@2
+            displayName: 'Zip files'
             inputs:
               rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
               includeRootFolder: false
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
               replaceExistingArchive: true
-          
-      - job: publishArtifact
-        displayName: 'publish zipped files to download later'
-        dependsOn: archiveFiles
-        condition: succeeded()
-        steps:
+
+          # 4. Upload to DevOps server so the Release Pipeline can see it
           - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact'
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
               ArtifactName: 'drop'
