@@ -1,6 +1,7 @@
 trigger:
   branches:
-    main
+    include:
+      - main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -8,8 +9,8 @@ pool:
 stages:
   - stage: build
     displayName: 'build azure function app'
-    jobs:
-      - job:
+    jobs: 
+      - job: environmentSetup
         displayName: 'environment setup'
         steps:
           - task: UsePythonVersion@0
@@ -17,6 +18,30 @@ stages:
             inputs:
               versionSpec: '3.11'
               addToPath: true
+      - job: pythonScriptRun
+        displayName: 'run script to install dependencies'
+        dependsOn: environmentSetup
+        condition: succeeded()
+        steps:
+          - task: PythonScript@0
+            inputs:
+              scriptSource: 'inline'
+              script: |
+                python -m venv worker_venv
+                source worker_venv/bin/activate
+                pip install -r requirements.txt
 
+      - job: archiveFiles
+        displayName: 'zip files'
+        dependsOn: pythonScriptRun
+        condition: succeeded()
+        steps:
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+              replaceExistingArchive: true
           
   
