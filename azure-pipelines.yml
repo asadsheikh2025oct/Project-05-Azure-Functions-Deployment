@@ -44,3 +44,18 @@ stages:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
               ArtifactName: 'drop'
               publishLocation: 'Container'
+
+  - stage: Deploy
+    displayName: 'Deploy Stage'
+    dependsOn: build
+    condition: succeeded()
+    jobs:
+      - deployment: DeployJob
+        environment: 'production'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - 
