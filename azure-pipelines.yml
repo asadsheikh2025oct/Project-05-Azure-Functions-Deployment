@@ -1,0 +1,22 @@
+trigger:
+  branches:
+    main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: build
+    displayName: 'build azure function app'
+    jobs:
+      - job:
+        displayName: 'environment setup'
+        steps:
+          - task: UsePythonVersion@0
+            displayName: 'environment setup'
+            inputs:
+              versionSpec: '3.11'
+              addToPath: true
+
+          
+  
