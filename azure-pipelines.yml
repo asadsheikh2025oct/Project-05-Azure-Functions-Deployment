@@ -81,6 +81,8 @@ stages:
                     deploymentMethod: 'zipDeploy'
                     # Enable remote build for Python dependencies
                     appSettings: '-ENABLE_ORYX_BUILD true -SCM_DO_BUILD_DURING_DEPLOYMENT true -FUNCTIONS_WORKER_RUNTIME python'
+                    # Disable trigger sync to avoid permissions issues (triggers sync automatically on app start)
+                    enableSyncTriggers: false
 
                 # Start the function app after deployment
                 - task: AzureAppServiceManage@0
