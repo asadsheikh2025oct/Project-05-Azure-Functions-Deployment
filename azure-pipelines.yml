@@ -88,6 +88,11 @@ stages:
                 - task: AzureAppServiceManage@0
                   displayName: 'Start Azure Function App'
                   inputs:
-                    azureSubscription: 'Azure subscription 1(f2f1d6df-9422-48cb-abf1-0a4eb095ad4a)'
-                    Action: 'Start Azure App Service'
-                    WebAppName: 'myFunctionAppDeployment'
+                    connectedServiceNameARM: 'Azure subscription 1(f2f1d6df-9422-48cb-abf1-0a4eb095ad4a)'
+                    appType: 'functionAppLinux'
+                    appName: 'myFunctionAppDeployment'
+                    package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+                    runtimeStack: 'PYTHON|3.11'
+                    deploymentMethod: 'zipDeploy'
+                    appSettings: '-ENABLE_ORYX_BUILD true -SCM_DO_BUILD_DURING_DEPLOYMENT true -FUNCTIONS_WORKER_RUNTIME python'
+                    enableSyncTriggers: false   # ADD THIS LINE
