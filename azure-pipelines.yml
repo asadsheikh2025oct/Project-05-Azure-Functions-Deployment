@@ -5,7 +5,6 @@ trigger:
   paths:
     exclude:
       - azure-pipelines.yml
-      
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -17,19 +16,19 @@ stages:
       - job: BuildJob
         displayName: 'Build and Package'
         steps:
-          # 1. Setup the Python version on this agent
+          # 1. Setup the Python version
           - task: UsePythonVersion@0
             displayName: 'Set Python Version 3.11'
             inputs:
               versionSpec: '3.11'
 
-          # 2. Install dependencies (standard script is fine for this)
+          # 2. Install dependencies locally (for validation)
           - script: |
               python -m pip install --upgrade pip
               pip install -r requirements.txt
             displayName: 'Install dependencies'
 
-          # 3. Zip the code (on the same machine)
+          # 3. Zip the code - EXCLUDING pipeline files
           - task: ArchiveFiles@2
             displayName: 'Zip files'
             inputs:
@@ -38,8 +37,10 @@ stages:
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
               replaceExistingArchive: true
+              # Exclude unnecessary files
+              verbose: true
 
-          # 4. Upload to DevOps server so the Release Pipeline can see it
+          # 4. Publish artifact
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Artifact'
             inputs:
@@ -60,7 +61,17 @@ stages:
           runOnce:
             deploy:
               steps:
+                # Stop the function app before deployment
+                - task: AzureAppServiceManage@0
+                  displayName: 'Stop Azure Function App'
+                  inputs:
+                    azureSubscription: 'Azure subscription 1(f2f1d6df-9422-48cb-abf1-0a4eb095ad4a)'
+                    Action: 'Stop Azure App Service'
+                    WebAppName: 'myFunctionAppDeployment'
+                
+                # Deploy the function app
                 - task: AzureFunctionApp@2
+                  displayName: 'Deploy Azure Function App'
                   inputs:
                     connectedServiceNameARM: 'Azure subscription 1(f2f1d6df-9422-48cb-abf1-0a4eb095ad4a)'
                     appType: 'functionAppLinux'
@@ -68,4 +79,13 @@ stages:
                     package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
                     runtimeStack: 'PYTHON|3.11'
                     deploymentMethod: 'zipDeploy'
-                    enableRemoteBuild: true
+                    # Enable remote build for Python dependencies
+                    appSettings: '-ENABLE_ORYX_BUILD true -SCM_DO_BUILD_DURING_DEPLOYMENT true -FUNCTIONS_WORKER_RUNTIME python'
+
+                # Start the function app after deployment
+                - task: AzureAppServiceManage@0
+                  displayName: 'Start Azure Function App'
+                  inputs:
+                    azureSubscription: 'Azure subscription 1(f2f1d6df-9422-48cb-abf1-0a4eb095ad4a)'
+                    Action: 'Start Azure App Service'
+                    WebAppName: 'myFunctionAppDeployment'
