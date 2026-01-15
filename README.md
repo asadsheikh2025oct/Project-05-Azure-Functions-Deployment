@@ -56,5 +56,5 @@ Deploying Python V2 functions involves specific nuances that I successfully navi
 
 ---
 
-**Author:** [Your Name]
+**Author:** Asad Sheikh
 **Project:** DevOps Practice Project 05
