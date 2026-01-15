@@ -69,15 +69,12 @@ stages:
                 - task: AzureFunctionApp@2
                   displayName: 'Azure Functions Deploy'
                   inputs:
-                    connectedServiceNameARM: 'Azure subscription 1(f2f1d6df-9422-48cb-abf1-0a4eb095ad4a)'
+                    connectedServiceNameARM: 'sc-arm'
                     appType: 'functionAppLinux'
                     appName: 'myFunctionAppDeployment'
                     package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
                     runtimeStack: 'PYTHON|3.11'
-                    deploymentMethod: 'zipDeploy'
-                    # Forces Azure to build the environment on the server
-                    enableRemoteBuild: true 
-                    # Essential App Settings for Python V2 Model
                     appSettings: |
                       -AzureWebJobsFeatureFlags EnableWorkerIndexing
                       -SCM_DO_BUILD_DURING_DEPLOYMENT true
+                    deploymentMethod: 'zipDeploy'
