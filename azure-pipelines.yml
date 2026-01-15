@@ -58,4 +58,10 @@ stages:
           runOnce:
             deploy:
               steps:
-                - 
+                - task: AzureFunctionApp@2
+                  inputs:
+                    connectedServiceNameARM: 'Azure subscription 1(f2f1d6df-9422-48cb-abf1-0a4eb095ad4a)'
+                    appType: 'functionApp'
+                    isFlexConsumption: true
+                    appName: 'myFristFunctionAppDeployment'
+                    package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
