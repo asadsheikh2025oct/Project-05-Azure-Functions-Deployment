@@ -5,7 +5,7 @@ trigger:
   paths:
     exclude:
       - azure-pipelines.yml
-
+      
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -37,7 +37,6 @@ stages:
               archiveType: 'zip'
               archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
               replaceExistingArchive: true
-              # Exclude unnecessary files
               verbose: true
 
           # 4. Publish artifact
@@ -79,20 +78,13 @@ stages:
                     package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
                     runtimeStack: 'PYTHON|3.11'
                     deploymentMethod: 'zipDeploy'
-                    # Enable remote build for Python dependencies
                     appSettings: '-ENABLE_ORYX_BUILD true -SCM_DO_BUILD_DURING_DEPLOYMENT true -FUNCTIONS_WORKER_RUNTIME python'
-                    # Disable trigger sync to avoid permissions issues (triggers sync automatically on app start)
                     enableSyncTriggers: false
 
                 # Start the function app after deployment
                 - task: AzureAppServiceManage@0
                   displayName: 'Start Azure Function App'
                   inputs:
-                    connectedServiceNameARM: 'Azure subscription 1(f2f1d6df-9422-48cb-abf1-0a4eb095ad4a)'
-                    appType: 'functionAppLinux'
-                    appName: 'myFunctionAppDeployment'
-                    package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
-                    runtimeStack: 'PYTHON|3.11'
-                    deploymentMethod: 'zipDeploy'
-                    appSettings: '-ENABLE_ORYX_BUILD true -SCM_DO_BUILD_DURING_DEPLOYMENT true -FUNCTIONS_WORKER_RUNTIME python'
-                    enableSyncTriggers: false
+                    azureSubscription: 'Azure subscription 1(f2f1d6df-9422-48cb-abf1-0a4eb095ad4a)'
+                    Action: 'Start Azure App Service'
+                    WebAppName: 'myFunctionAppDeployment'
