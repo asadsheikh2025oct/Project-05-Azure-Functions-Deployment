@@ -64,6 +64,8 @@ stages:
                   inputs:
                     connectedServiceNameARM: 'Azure subscription 1(f2f1d6df-9422-48cb-abf1-0a4eb095ad4a)'
                     appType: 'functionAppLinux'
-                    isFlexConsumption: true
-                    appName: 'myFristFunctionAppDeployment'
+                    appName: 'myFunctionAppDeployment'
                     package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+                    runtimeStack: 'PYTHON|3.11'
+                    deploymentMethod: 'zipDeploy'
+                    enableRemoteBuild: true
